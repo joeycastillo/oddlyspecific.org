@@ -4,7 +4,6 @@ _site
 .jekyll
 .jekyll-cache
 .sass-cache
-Gemfile
-Gemfile.lock
+vendor
 node_modules
 package.json
