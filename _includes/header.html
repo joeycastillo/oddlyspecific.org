@@ -1,0 +1,14 @@
+<header>
+    <h1><a href="/">{{ site.title }}</a></h1>
+</header>
+{% if site.navigation %}
+<nav>
+    <ul class="inline">
+        {% for link in site.navigation %}
+        <li>
+            <a href="{{ link.url }}">{{ link.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}

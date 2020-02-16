@@ -1,0 +1,30 @@
+# Site settings
+title: Oddly Specific Objects
+description: oddly specific designs for oddly specific situations
+url: "http://www.oddlyspecific.org"
+permalink: /:year/:month/:day/:title/
+
+# Social
+image: /assets/images/default.png # this image appears when shared on social media
+
+# Analytics
+# analytics: UA-XXXXXXXX
+
+# Contact
+author: Joey Castillo
+# email: user@example.com
+
+# Navigation
+# navigation:
+# - title: About
+#   url: /about
+# - title: Blog
+#   url: /blog
+
+# Configuration details
+sass:
+    sass_dir: css
+    # Use this for production
+    # style: compressed
+
+exclude: [.scss, README.md, node_modules, gruntfile.js, package.json, Gemfile, circle.yml]
