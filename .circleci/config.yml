@@ -38,7 +38,7 @@ jobs:
           at: ./
       - run:
           name: Publish to Site
-          command: rsync -va --delete ./_site/ joeycastillo_oso@ssh.phx.nearlyfreespeech.net:/fs1a/oso/public/
+          command: rsync -va --delete ./_site/ joeycastillo_oso@ssh.phx.nearlyfreespeech.net:/home/public/
 workflows:
   version: 2
   build-and-deploy:
