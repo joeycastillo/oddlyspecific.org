@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "The Hiking Log"
-image: /assets/images/posts/2020-02-20-log-main.jpg
+image: /assets/images/posts/2020-02-20-log-card.jpg
 description: First in a series of guides; teaching the skills to build the book.
 ---
 
