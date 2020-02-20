@@ -1,10 +1,11 @@
 ---
 layout: default
 title: "The Hiking Log"
+image: /assets/images/posts/2020-02-20-log-main.jpg
 description: First in a series of guides; teaching the skills to build the book.
 ---
 
-# Object #1: The Hiking Log
+# Road to the Book #1: The Hiking Log
 
 This is the first in a series of educational build logs, designed to teach both the soldering skills necessary to build the Open Book, and the electronics knowledge that will give you the confidence to design your own projects in the future. These eight guides will leave you with five useful objects that you can mount on your bike or toss in a backpack. At each step, you’ll learn important electronics concepts, and move from breadboarding and through-hole soldering to surface mount technology and custom printed circuit board (PCB) design. The final project will be an open-source e-book reader that you’ll build yourself, from scratch. 
 
