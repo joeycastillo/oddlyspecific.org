@@ -131,7 +131,7 @@ OK, so here's the deal: this project is ideal in a 3D printed enclosure. If you 
 
 I printed with wood-fill PLA, which is plastic with wood fibers, so that it would feel like an actual log. The top half has a cutout for the GPS antenna; the bottom half has a cutout for the slide switch. Inside, the log has cutouts sized for the Feather, Wing, battery and sensor:  
 
-Design files are available [on Tinkercad](https://www.tinkercad.com/things/fs752lxl3uC-hiking-log-enclosure) (TODO: Update Files!!!)
+Design files: [Hiking Log Top Half](/assets/designs/2020-02-20-Hiking_Log_Top.stl) and [Hiking Log Bottom Half](/assets/designs/2020-02-20-Hiking_Log_Bottom.stl).
 
 3D printing involves depositing material layer by layer, from bottom to top, to create a solid object. Two important things to note here: first, a 3D model, generally speaking, only represents the "skin" of an object. What's inside? Is it hollow, or solid? How solid? Solid like stone or solid like foam? Or is it filled with air pockets, like the honeycombs of a beehive? You'll have to decide what kind of **infill** to use. 
 
@@ -255,7 +255,7 @@ Then, close it up! You can keep it all together with a rubber band:
 
 You absolutely do not need an illustration for this step, but I think it's fun. Plug the log you've built in to your computer: 
 
-[image]
+![Build photo: the log plugged in to a computer](/assets/images/posts/2020-02-20-build-270.jpg)
 
 Open up the [Arduino IDE](https://www.arduino.cc/en/Main/Software). If you haven't done so already, follow [these instructions](https://learn.adafruit.com/add-boards-arduino-v164/setup) to install Adafruit's SAMD board support. You'll also need to install the following libraries: 
 
@@ -266,7 +266,7 @@ Open up the [Arduino IDE](https://www.arduino.cc/en/Main/Software). If you haven
 
 The DHT sensor library, perhaps unsurprisingly, talks to the DHT22 sensor. The GPS library does the same for the GPS wing. Those last two libraries, though. They interface with a couple of peripherals that you might not remember soldering. These two peripherals came with the board.
 
-The first peripheral is a little chip on the Feather, next to the protoboard area. It's a two megabyte Flash chip; every Adafruit board with "Express" in the name comes with one. We're going to use it to store the data we collect on our hikes, and the SPIFlash library is going to be our interface to it. This guide isn't going to talk about it much more than that, but SPI is a major topic by the end (and one we'll start to explore at the end of the next guide).
+The first peripheral is a little chip on the Feather, next to the prototyping area. It's a two megabyte Flash chip; every Adafruit board with "Express" in the name comes with one. We're going to use it to store the data we collect on our hikes, and the SPIFlash library is going to be our interface to it. This guide isn't going to talk about it much more than that, but SPI is a major topic by the end (and one we'll start to explore at the end of the next guide).
 
 You might not even think of the second peripheral as a device in its own right, but it's one of the most powerful: I'm talking about the USB port. Since the SAMD21 at the heart of this gadget has native USB functionality, we can easily use the USB port to do all kinds of USB things, from emulating a keyboard to showing up as a thumb drive. That's what TinyUSB is going to do for us: turn the log into a hard drive so we can get our data out. 
 
@@ -283,7 +283,7 @@ First, let's bring in our libraries. At the top, add imports for the two librari
 #include <avr/dtostrf.h>
 ```
 
-While you're there, you can also add a couple of globals for the GPS, filesystem and sensor: 
+While you're there, you can also add a couple of globals for the GPS, Flash, filesystem and sensor: 
 
 ```
 Adafruit_GPS GPS(&Serial1);
@@ -325,6 +325,8 @@ GPS.sendCommand("$PMTK313,1*2E\r\n");
 // Set differential GPS data source to WAAS
 GPS.sendCommand("$PMTK301,2*2E\r\n");
 ```
+
+TODO inser datasheet bit
 
 At this point, the Flash filesystem, the temperature sensor and the GPS are all set up!
 
@@ -491,6 +493,8 @@ digitalWrite(LED_BUILTIN, LOW);
 
 At this point, you're done! Make sure that the "Feather M0 Express" board is selected in the Tools -> Board menu, and that your board is selected in the Tools -> Port menu. Run the sketch, and let the log sit near a window for a bit to make sure it gets a fix. Once it does, every minute, on the minute, you should see the little red LED blip on for just a fraction of a second. That's your sketch, logging data to the log.
 
+For completeness' sake; here's [the full source code](/assets/code/2020-02-20-Hiking_Log.ino)!
+
 ### Getting files off the Log
 
 To get files off, we're going to need a different sketch. Go to File -> Examples -> Adafruit TinyUSB -> Mass Storage -> msc_external_flash. Make sure that the "Feather M0 Express" board is selected in the Tools -> Board menu, and that your board is selected in the Tools -> Port menu. Then, run the sketch! You should see a drive called "CIRCUITPY" appear connected to your computer. 
@@ -499,16 +503,20 @@ This is the contents of the two-megabyte Flash chip on the Feather. You should b
 
 ## Extra Credit: Make It Your Own
 
-I first built the Hiking Log what feels like ages upon ages ago. Over the years I've wanted to add various features, from an on-off switch (which made it into this guide!) to a screen (which did not). Here's the thing, though: we are using a grand total of five pins on this board, which still leaves a ton of room for expansion. There's five more analog inputs available to you, almost the entire top row of digital IO, and while we haven't talked about SPI or I2C, those are both buses that you could use to add more sensors or drive a display! Which is what I was doing this week: 
+I first built the Hiking Log what feels like ages upon ages ago. Over the years I've wanted to add various features, from an on-off switch (which made it into this guide!) to a screen (which did not). Here's the thing, though: we are using a grand total of five pins on this board and less than a quarter of the space available for code. This leaves a ton of room for expansion! There's five more analog inputs available to you, almost the entire top row of digital IO, and while we haven't talked about SPI or I2C, those are both buses that you could use to add more sensors or drive a display! Which is what I was doing this week: 
 
-[image]
+![The log, painted brown on the outside, with a cutout for a screen displaying information](/assets/images/posts/2020-02-20-extracredit-01.jpg)
 
-In this case, I wired the display to the SPI bus (which we'll start to talk about in "extra credit" next week), plus some of the IO pins up top (taking care to leave pin 9, the battery monitor, free). I also spent some time painting the log with acrylic paint (burnt umber) to give the exterior a more log-like appearance (taking care to mask the ends with painter's tape, to make sure the wood inside shone through). 
+![Looking behind the screen; thin enamel wires connect the pins of an Adafruit 240x135 Color TFT breakout to pins on the GPS wing](/assets/images/posts/2020-02-20-extracredit-02.jpg)
 
-[image]
+In this case, I wired the display to the SPI bus (which we'll start to talk about in "extra credit" next week), plus some of the IO pins up top (taking care to leave pin 9, the battery monitor, free). I also spent some time painting the log with brown acrylic paint to give the exterior a more log-like appearance (taking care to mask the ends with painter's tape, to make sure the wood inside shone through). 
 
-Maybe you want to print the log in high-visibility orange, or add a UV light sensor; perhaps you want to add a clock display and a speaker, to wake you up for the sunrise. That last idea literally just occurred to me as I was writing this closing; with the location data on the log, you can calculate the sunrise completely offline. And there's a true analog output on pin A0 that could totally drive a speaker.
+![The two halves of the log coated in wet brown paint](/assets/images/posts/2020-02-20-extracredit-03.jpg)
 
-ANYWAY. The point of this, as we close out the first in this eight part series, is that you don't have to follow the instructions, or accept the widget that I or anyone else puts before you. Take this design, build on it; come up with your own ideas, build on them. 
+![Peeling a semicircle of painter's tape off of one end of the log](/assets/images/posts/2020-02-20-extracredit-04.jpg)
+
+Maybe you want to paint (or print!) the log in high-visibility orange, or add a UV light sensor; perhaps you want to add a clock display and a speaker, to wake you up for the sunrise. That last idea literally just occurred to me as I was writing this closing; with the location data on the log, you can calculate the sunrise completely offline. And there's a true analog output on pin A0 that could totally drive a speaker.
+
+ANYWAY. The point of this, as we close out the first in this eight part series, is that you don't have to follow the instructions, or accept the widget that I or anyone else puts before you. Take this design, build on it; come up with your own ideas, build on them. Come back to the log in a few weeks with the new things you've learned, and trick it out with whatever paint job or accessories get you excited!
 
 Next week we're going to light up some more blinkenlights, and get even closer to bare metal by driving clock and data lines ourselves, just flashing wires high and low. We'll also learn about Ohm's Law and current limiting, the aforementioned I2C protocol, and we'll make heavy use of one really useful gadget in particular: the shift register.
