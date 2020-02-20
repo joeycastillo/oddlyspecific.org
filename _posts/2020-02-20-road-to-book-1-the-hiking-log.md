@@ -1,8 +1,8 @@
 ---
 layout: default
-title: "The Hiking Log"
-image: /assets/images/posts/2020-02-20-log-card.jpg
-description: First in a series of guides; teaching the skills to build the book.
+title: "Road to the Book #1: The Hiking Log"
+image: /assets/images/posts/2020-02-20-card.jpg
+description: Teaching the skills to build the book; this first gadget is a log-shaped log of weather and GPS tracks.
 ---
 
 # Road to the Book #1: The Hiking Log
@@ -327,9 +327,9 @@ GPS.sendCommand("$PMTK313,1*2E\r\n");
 GPS.sendCommand("$PMTK301,2*2E\r\n");
 ```
 
-TODO inser datasheet bit
+How did I know about these hidden incantations? Partly the Adafruit forums, but also by [reading the GPS module's datasheet](https://cdn-shop.adafruit.com/datasheets/GlobalTop-FGPMMOPA6H-Datasheet-V0A.pdf)! Seriously, reading these datasheets is going to become a past-time over the course of these guides.
 
-At this point, the Flash filesystem, the temperature sensor and the GPS are all set up!
+Anyway at this point, the Flash filesystem, the temperature sensor and the GPS are all set up!
 
 ### The Loop
 
