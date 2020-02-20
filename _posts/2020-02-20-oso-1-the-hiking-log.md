@@ -38,7 +38,7 @@ Finally: this bit is a bigger investment, but if you want to make enclosures for
 
 The Hiking Log is going to make use of two boards from Adafruit: the Feather M0 Express, and the Ultimate GPS FeatherWing, which will be mounted on top of each other. We’ll pair these two boards with a DHT22 temperature and humidity sensor; the Ultimate GPS will provide time and location data, and the DHT22 will provide weather data. Power will come from a big 2,200 mAh battery, which will give the log multiple days of power for overnight camping trips. Finally, a slide switch on the bottom will let us turn the log on and off.
 
-### The Parts List:
+#### The Parts List:
 * [Red solid-core wire](https://www.adafruit.com/product/288)
 * [Yellow solid-core wire](https://www.adafruit.com/product/289)
 * [Black solid-core wire](https://www.adafruit.com/product/290)
@@ -49,7 +49,7 @@ The Hiking Log is going to make use of two boards from Adafruit: the Feather M0 
 * [DHT22 temperature and humidity sensor](https://www.adafruit.com/product/385)
 * [2200 mAh battery](https://www.adafruit.com/product/1781)
 * [SPDT Slide Switch](https://www.adafruit.com/product/805)
-* [Solderless breadboard](https://www.adafruit.com/product/239) (get the full-length one, even though the photos in this guide are of a short one)
+* [Half-size solderless breadboard](https://www.adafruit.com/product/64)
 * For 3D Printing: [wood-fill PLA](https://www.monoprice.com/product?p_id=12507)
 
 The overall build will look something like this, if you imagine that the two boards mounted on top of each other:
@@ -58,7 +58,7 @@ The overall build will look something like this, if you imagine that the two boa
 
 Let's walk through the major parts of the design, before we start soldering it together. 
 
-#### Power (and voltage)
+### Power (and voltage)
 
 First, let’s understand the rough nature of how the build is powered. We’re going to mount the GPS FeatherWing on top of the Feather M0 Express. The Feather provides a 3.3 volt **power rail** on the 3V3 pin. Some of that power is used to operate the microcontroller and the Flash chip on board, but there's plenty leftover, so the wing is going to use that power to run the GPS. We're also going to power the DHT22 from that 3.3 volt power source, using a red wire to the 3V3 pin. 
 
@@ -70,11 +70,11 @@ Now, there's nothing that says that 3.3 is the highest voltage we can have; in f
 
 One of those useful things is checking the temperature. 
 
-#### The Temperature Sensor (and digital logic)
+### The Temperature Sensor (and digital logic)
 
 The DHT22 is a great little sensor, with one very awesome feature: it only needs one wire to communicate! This means that we only need to run three wires to it: power, ground and data. The specifics of what goes over the data line are a bit in the weeds at this point — we're going to use an Arduino library that speaks its language — but there is one very important concept that we need to talk about to understand how it works, and that's **digital logic**. Most people know that computers think in terms of 1's and 0's. What's less common knowledge is how those 1's and 0's are represented in the physical world. If you pinch a wire between your fingers, you might wonder: what about it makes the signal inside of it a 1 or a 0? 
 
-One of the fun things about building gadgets like this is that manufacturers — at least the maker-friendly ones — tend to publish exhaustive documentation of the products they make, so whatever you're wondering about: you can find out! In the case of the Feather M0's microcontroller, the SAMD21, you can open up [its data sheet](http://ww1.microchip.com/downloads/en/DeviceDoc/SAM_D21_DA1_Family_Data%20Sheet_DS40001882E.pdf) and look for a table called "Electrical Characteristics". In that table, you'll find something like this: 
+One of the fun things about building stuff like this is that manufacturers — at least the maker-friendly ones — tend to publish exhaustive documentation of the products they make, so whatever you're wondering about: you can find out! In the case of the Feather M0's microcontroller, the SAMD21, you can open up [its data sheet](http://ww1.microchip.com/downloads/en/DeviceDoc/SAM_D21_DA1_Family_Data%20Sheet_DS40001882E.pdf) and look for a table called "Electrical Characteristics". In that table, you'll find something like this: 
 
 ![A section of data sheet with information about logic levels.](/assets/images/posts/2020-02-20-datasheet.png)
 
@@ -109,13 +109,13 @@ That would actually work to pull the line high, but it would fail the moment the
 
 Before moving on: we aren't going to use them in this circuit, but it's good to note that you can also use a resistor as a **pull-down** to 0 volts; this is useful when you have outputs that can only source current, but not sink it. We'll make use of these eventually. 
 
-#### The On/Off Switch
+### The On/Off Switch
 
 Next, let's talk about that on/off switch. Feathers have a really useful feature called an "Enable" pin. This pin isn't connected to the microcontroller; instead, it's connected to an input on the voltage regulator, which provides that 3V3 power rail we were talking about. As long as the Enable pin is at a logic high level, the power supply is going to supply those 3.3 volts. When it does go low, the regulator will will stop supplying those 3.3 volts, which will turn off our gadget. 
 
 To keep the regulator on, the Feather connects this pin (via — again — a pull-up resistor!) to the highest voltage coming in to the board: either the USB plug, which is 5 volts, or the battery voltage, ~3.7 volts. We're going to add a switch that connects the Enable pin to GND, or logic low, instead. It's very similar to what was happening with the temperature sensor above: the Enable line is pulled high, until someone pulls it low; in this case, though, the tiny chip person with the button is a regular sized person (you!) with a literal switch that you can use to tell the regulator what to do. 
 
-#### The GPS Wing
+### The GPS Wing
 
 The cool thing about the GPS wing — aside from the fact that it, y'know, computes your location on earth by listening to radio signals FROM SPACE — is that to a certain extent, it's an entire computer of its own, mounted on our microcontroller board like a backpack. 
 
@@ -125,7 +125,7 @@ At that point, all it has to do is communicate it to us. The communication stand
 
 We can also talk back to it via the TX pin on the Feather (aka the RX pin on the Wing) when we want to give it commands. 
 
-### 3D Printing
+### The Enclosure / 3D Printing
 
 OK, so here's the deal: this project is ideal in a 3D printed enclosure. If you don't want to invest in a 3D printer, you can probably find a project enclosure that will work, but this guide is going to assume that you want to 3D print the log, because it's awesome! If you don't want to print the log, you should still be able to follow along; just do whatever makes sense to fit the parts in the enclosure that you're using.
 
@@ -143,7 +143,7 @@ We'll be able to address both of these things when we **slice** an object for pr
 
 I'm not going to dwell too much on the 3D printing part, partly because there's no "right" answer, and partly because you'll learn way more by just trying some stuff. Mostly though I'm moving on because we're 3,000 words in, and we haven't even started building. 
 
-### Can we build it already?
+## Can we build it already?
 
 Yes we can. 
 
@@ -251,10 +251,264 @@ Then, close it up! You can keep it all together with a rubber band:
 
 ![Build photo](/assets/images/posts/2020-02-20-build-260.jpg)
 
-### Programming Your Log (Arduino Basics)
+## Programming Your Log (Arduino Basics)
 
 You absolutely do not need an illustration for this step, but I think it's fun. Plug the log you've built in to your computer: 
 
 [image]
 
-TODO: the rest of the guide.    
+Open up the [Arduino IDE](https://www.arduino.cc/en/Main/Software). If you haven't done so already, follow [these instructions](https://learn.adafruit.com/add-boards-arduino-v164/setup) to install Adafruit's SAMD board support. You'll also need to install the following libraries: 
+
+* DHT Sensor library
+* Adafruit GPS Library
+* Adafruit SPIFlash
+* Adafruit TinyUSB Library
+
+The DHT sensor library, perhaps unsurprisingly, talks to the DHT22 sensor. The GPS library does the same for the GPS wing. Those last two libraries, though. They interface with a couple of peripherals that you might not remember soldering. These two peripherals came with the board.
+
+The first peripheral is a little chip on the Feather, next to the protoboard area. It's a two megabyte Flash chip; every Adafruit board with "Express" in the name comes with one. We're going to use it to store the data we collect on our hikes, and the SPIFlash library is going to be our interface to it. This guide isn't going to talk about it much more than that, but SPI is a major topic by the end (and one we'll start to explore at the end of the next guide).
+
+You might not even think of the second peripheral as a device in its own right, but it's one of the most powerful: I'm talking about the USB port. Since the SAMD21 at the heart of this gadget has native USB functionality, we can easily use the USB port to do all kinds of USB things, from emulating a keyboard to showing up as a thumb drive. That's what TinyUSB is going to do for us: turn the log into a hard drive so we can get our data out. 
+
+### The Arduino Sketch
+
+We're going to start with a blank sketch; just click File -> New. 
+
+First, let's bring in our libraries. At the top, add imports for the two libraries we need, (and one more for a function we're going to end up using): 
+
+```
+#include <Adafruit_SPIFlash.h>
+#include <Adafruit_GPS.h>
+#include <DHT.h>
+#include <avr/dtostrf.h>
+```
+
+While you're there, you can also add a couple of globals for the GPS, filesystem and sensor: 
+
+```
+Adafruit_GPS GPS(&Serial1);
+DHT dht(A1, DHT22);
+Adafruit_FlashTransport_SPI flashTransport(SS1, &SPI1);
+Adafruit_SPIFlash flash(&flashTransport);
+FatFileSystem fatfs;
+```
+
+From here, we're going to add all of our setup code in the setup() function, and our looping code in loop() function. If you haven't done Arduino stuff before: the code in setup() runs once when the device turns on or resets, and the code in loop() runs repeatedly. 
+
+### The Setup
+
+The DHT sensor and the Flash chip don't require much in the way of setup; there are no special parameters to set or options to configure. We just need to tell them to get started: 
+
+```
+dht.begin();
+flash.begin();
+fatfs.begin(&flash);
+```
+
+The GPS, on the other hand, is a complex beast. Luckily, the Adafruit GPS library has some presets that make configuring it reasonably straightforward. 
+
+```
+GPS.begin(9600);
+// Turn on RMC (recommended data) and GGA (fix data), including altitude
+GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+// Set the update rate to 1 Hz
+GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
+// Turn off messages about antenna state
+GPS.sendCommand(PGCMD_NOANTENNA);
+```
+
+Each of the macros in those sendCommand calls expand to a string of characters that gets sent out on the Feather's TX pin (to the GPS Wing's RX pin). If you want to see what those commands look like, you're in luck! If you're in the Western hemisphere, I recommend you add these two commands that aren't in the Adafruit library; they seem to improve accuracy. Add them, experiment with them, see if they make a difference for you:
+
+```
+// Enable satellite-based augmentation (SBAS)
+GPS.sendCommand("$PMTK313,1*2E\r\n");
+// Set differential GPS data source to WAAS
+GPS.sendCommand("$PMTK301,2*2E\r\n");
+```
+
+At this point, the Flash filesystem, the temperature sensor and the GPS are all set up!
+
+### The Loop
+
+Now let's turn our attention to the loop function. First, we're going to need to update the GPS. Data comes in on the Feather's RX line (from the Wing's TX line), and the only way the GPS module will be able to process it is if we tell it to read. 
+
+
+```
+/* GPS PARSING */
+GPS.read();
+```
+
+This reads whatever characters came in on the RX line. Remember: the GPS is just sending us sentences of data, one line at a time. Which means that if that input included a newline, we might have a new sentence: 
+
+```
+if (GPS.newNMEAreceived()) {
+  // try to parse the sentence, but if we can't, no worries, just try again on the next loop.
+  if (!GPS.parse(GPS.lastNMEA())) return;
+}
+```
+
+This GPS.parse method does A LOT. The sentence that came in could have included data about our location and heading, the time of day, the number of satellites in view, all kinds of good stuff. The parse method takes all of that data, and updates the instance variables in the GPS class so that we can just query `GPS.satellites` and get the latest value for how many satellites are in view. 
+
+Next, we're going to log the data! We can't log all the time, though. To keep it simple, we're going to log a data point every minute. The GPS module gives us a super-accurate, satellite-synchronized real-time clock, so all we have to do is: 
+
+1. Set a variable `shouldLog` to true.
+2. Log a data point when the seconds on the clock read :00
+3. Set `shouldLog` to false, so we don't keep logging all second long, then
+4. When the clock reads :01, set `shouldLog` to true again.
+
+Ergo: 
+
+```
+static bool shouldLog = true;
+int seconds = GPS.seconds;
+// Log data every minute, provided we have a valid timestamp
+if (shouldLog && seconds == 0 && GPS.year != 0) {
+  String datapoint;
+  // TODO: add data to datapoint
+  // TODO: write datapoint to file
+  shouldLog = false;
+}
+else if (seconds == 1) {
+  shouldLog = true;
+}
+```
+
+The data we log is going to be in CSV format, short for **comma separated values**. It's basically a spreadsheet, where each value is in a column, with the comma as the divider.
+
+First, let's create the timestamp with a sprintf call, and add it to the datapoint: 
+
+```
+char timestamp[20];
+sprintf(timestamp, "20%02d-%02d-%02dT%d:%02d:%02d", GPS.year, GPS.month, GPS.day, GPS.hour, GPS.minute, seconds);
+datapoint += timestamp;
+datapoint += ',';
+```
+
+This will be our first column. Next let's add data points for our GPS fix:
+
+```
+datapoint += (int)GPS.fix;
+datapoint += ',';
+```
+
+Pretty simple: 1 if we have a fix, 0 if we don't. Now we can add data points for our location. We don't want to log this if our location is invalid, though, so let's wrap it in a conditional: 
+
+```
+if (GPS.fix) {
+  char outstr[15];
+  dtostrf(GPS.latitudeDegrees, 7, 7, outstr);
+  datapoint += outstr;
+  datapoint += ',';
+  dtostrf(GPS.longitudeDegrees, 7, 7, outstr);
+  datapoint += outstr;
+  datapoint += ',';
+  datapoint += GPS.HDOP;
+  datapoint += ',';
+  datapoint += GPS.speed * 1.852001;
+  datapoint += ',';
+  datapoint += GPS.angle;
+  datapoint += ',';
+  datapoint += GPS.altitude;
+  datapoint += ',';
+}
+else
+{
+  datapoint += ",,,,,,";
+}
+```
+
+The dtostrf call is like the sprintf above, but for formatting double precision numbers like our GPS coordinates. After that, we log some more data that the GPS has for us: HDOP (horizontal dilution of position) tells us how accurate our location is. Speed, the GPS gives to us in knots, like for ships. We multiply it by 1.852001 to get this number in kilometers per hour. Angle is your heading in degrees; the GPS doesn't have a compass, but if you're moving, the GPS can tell you what direction you're going (true north is 0). And then altitude is meters above sea level.
+
+If we don't have a fix, we just output six commas, to keep the columns aligned. This will show up as empty cells in our spreadsheet.
+
+One last GPS thing that I find fun: the GPS module also reports the number of satellites it's using for the calculation. I find this data point so abundantly fun, so let's add it: 
+
+```
+datapoint += (int)GPS.satellites;
+datapoint += ',';
+```
+
+Now it's time to log our sensor data. It's actually pretty simple, thanks to the awesome library that's talking to the sensor for us: 
+
+```
+float t = dht.readTemperature();
+float h = dht.readHumidity();
+
+if (isnan(t) || isnan(h)) {
+  datapoint += ",,";
+}
+else {
+  datapoint += t;
+  datapoint += ',';
+  datapoint += h;
+  datapoint += ',';
+}
+```
+
+Basically we log the temperature (in celsius) and relative humidity (in percent) if the values are valid, or blank values if not.
+
+Finally, we didn't talk much about analog inputs (we will revisit this in lesson 5), but the Feather M0 Express includes a battery voltage monitor on pin 9. It returns a 10-bit integer (0-1023) that represents half of the battery voltage, which is useful to show us how much of a charge the log is working with. Let's log that too: 
+
+```
+float measuredvbat = analogRead(9);
+measuredvbat /= 1023;
+measuredvbat *= 3.3;
+measuredvbat *= 2;
+datapoint += (measuredvbat);
+```
+
+First we convert the number from an integer from 0-1023 to a float from 0-1. Then we multiply by 3.3 volts, the reference voltage, since 1.0 represents the maximum of 3.3 volts. Finally, we multiply by 2, since pin 9 represents half of the battery voltage. 
+
+If you're wondering how this battery monitor works, don't worry, we're going to build one ourselves soon.
+
+With that, we can log the data to the Flash chip! The TODO line for this should be just below the battery measurement; replace it with this: 
+
+```
+File dataFile = fatfs.open("log.csv", FILE_WRITE);
+if (dataFile)
+{
+  dataFile.println(datapoint);
+  dataFile.close();
+}
+```
+
+You could call it here, but all you'll get when you open this in your spreadsheet program is a table of numbers. A header describing the columns would be nice, so add this before the println(datapoint) call: 
+
+```
+if (dataFile.size() == 0) {
+  const char header[] = "Timestamp,GPS Fix,Latitude,Longitude,HDOP,Speed,Angle,Altitude,Satellites In View,Temperature (C),Relative Humidity (%),Battery Voltage";
+  dataFile.println(header);
+}
+```
+
+Finally, the Feather comes with an LED, so you might as well make use of the blinkenlight to tell the user that something happened. Add this right after dataFile.close():
+
+```
+digitalWrite(LED_BUILTIN, HIGH);
+delay(10);
+digitalWrite(LED_BUILTIN, LOW);
+```
+
+At this point, you're done! Make sure that the "Feather M0 Express" board is selected in the Tools -> Board menu, and that your board is selected in the Tools -> Port menu. Run the sketch, and let the log sit near a window for a bit to make sure it gets a fix. Once it does, every minute, on the minute, you should see the little red LED blip on for just a fraction of a second. That's your sketch, logging data to the log.
+
+### Getting files off the Log
+
+To get files off, we're going to need a different sketch. Go to File -> Examples -> Adafruit TinyUSB -> Mass Storage -> msc_external_flash. Make sure that the "Feather M0 Express" board is selected in the Tools -> Board menu, and that your board is selected in the Tools -> Port menu. Then, run the sketch! You should see a drive called "CIRCUITPY" appear connected to your computer. 
+
+This is the contents of the two-megabyte Flash chip on the Feather. You should be able to see log.csv there, and copy it to your hard drive. Note that the log won't log things as long as this sketch is running. You'll have to run your previous sketch to get that functionality back.
+
+## Extra Credit: Make It Your Own
+
+I first built the Hiking Log what feels like ages upon ages ago. Over the years I've wanted to add various features, from an on-off switch (which made it into this guide!) to a screen (which did not). Here's the thing, though: we are using a grand total of five pins on this board, which still leaves a ton of room for expansion. There's five more analog inputs available to you, almost the entire top row of digital IO, and while we haven't talked about SPI or I2C, those are both buses that you could use to add more sensors or drive a display! Which is what I was doing this week: 
+
+[image]
+
+In this case, I wired the display to the SPI bus (which we'll start to talk about in "extra credit" next week), plus some of the IO pins up top (taking care to leave pin 9, the battery monitor, free). I also spent some time painting the log with acrylic paint (burnt umber) to give the exterior a more log-like appearance (taking care to mask the ends with painter's tape, to make sure the wood inside shone through). 
+
+[image]
+
+Maybe you want to print the log in high-visibility orange, or add a UV light sensor; perhaps you want to add a clock display and a speaker, to wake you up for the sunrise. That last idea literally just occurred to me as I was writing this closing; with the location data on the log, you can calculate the sunrise completely offline. And there's a true analog output on pin A0 that could totally drive a speaker.
+
+ANYWAY. The point of this, as we close out the first in this eight part series, is that you don't have to follow the instructions, or accept the widget that I or anyone else puts before you. Take this design, build on it; come up with your own ideas, build on them. 
+
+Next week we're going to light up some more blinkenlights, and get even closer to bare metal by driving clock and data lines ourselves, just flashing wires high and low. We'll also learn about Ohm's Law and current limiting, the aforementioned I2C protocol, and we'll make heavy use of one really useful gadget in particular: the shift register.
