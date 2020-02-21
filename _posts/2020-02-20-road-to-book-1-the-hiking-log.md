@@ -22,7 +22,7 @@ I’m going to get this out of the way quickly: I **love** this project. I’ve 
 The Hiking Log builds on the Adafruit Feather standard, which we’re going to be making extensive use of throughout these guides. If you’re at all familiar with the Arduino ecosystem, Feather is similar in that it’s a standard for microcontroller boards, that’s compatible with a wide variety of accessory boards (called “Feather Wings”). It’s become a de facto standard in the hobbyist community, owing, I sense, to a few features that make it super useful for modern designs: 
 
 * 3.3V logic, which reduces the need for level shifting.
-* Lithium Polymer battery power, so you can take your project on the go.
+* LiPo battery power so you can take your project on the go.
 * Built-in battery charging as a core expectation, so you can plug any Feather into any USB port to recharge.
 
 It’s also super small, making it ideal for portable projects.
@@ -53,7 +53,7 @@ The Hiking Log is going to make use of two boards from Adafruit: the Feather M0 
 * [Half-size solderless breadboard](https://www.adafruit.com/product/64)
 * For 3D Printing: [wood-fill PLA](https://www.monoprice.com/product?p_id=12507)
 
-The overall build will look something like this, if you imagine that the two boards mounted on top of each other:
+The overall build will look something like this, if you imagine the two boards mounted on top of each other:
 
 ![A visual diagram of two boards side by side, connecting a sensor to power, data and ground pins, as well a toggle switch connecting a pin marked "enable" to GND](/assets/images/posts/2020-02-20-fritzing.png)
 
@@ -122,7 +122,7 @@ The cool thing about the GPS wing — aside from the fact that it, y'know, compu
 
 A quick primer on GPS, because I honestly didn't understand this at first. GPS isn't like your cell phone service. There's no two-way communication with the GPS constellation; the satellites don't see you there, and they certainly don't "know" anything about where you are. All each satellite broadcasts is its own position in space, along with a very precise timestamp indicating when it sent that data. A GPS module (like the one on on the wing) listens for these signals, and when it has a few of them from a few satellites, it can use that time and distance data to triangulate your exact position on the globe. 
 
-At that point, all it has to do is communicate it to us. The communication standard that the FeatherWing uses is just lines of ASCII text that it sends, one line at a time, through the TX pin on the Wing (aka the RX pin on the Feather). 
+At that point, all it has to do is communicate it to us. The communication standard that the FeatherWing uses is just lines of ASCII text that it sends, one character at a time, through the TX pin on the Wing (aka the RX pin on the Feather). 
 
 We can also talk back to it via the TX pin on the Feather (aka the RX pin on the Wing) when we want to give it commands. 
 
@@ -167,8 +167,6 @@ Now you can get your Feather M0 out, along with the slim socket headers. Use a l
 Then turn the board upside down, and solder the socket headers in. Make sure all the pins have good electrical contact, but don’t overdo it with the solder; if it gets sucked into the socket header, you’ll have trouble mounting it to the GPS board:
 
 ![Build photo](/assets/images/posts/2020-02-20-build-050.jpg)
-
-*(Your board probably won’t look as torn up as mine; this one's been through a lot)*
 
 Finally, for the moment, grab your switch, which will become our On/Off switch. Insert it in the UNDERSIDE of the Feather, into the three holes at the bottom right of the 5x5 grid:
 
@@ -267,7 +265,7 @@ Open up the [Arduino IDE](https://www.arduino.cc/en/Main/Software). If you haven
 
 The DHT sensor library, perhaps unsurprisingly, talks to the DHT22 sensor. The GPS library does the same for the GPS wing. Those last two libraries, though. They interface with a couple of peripherals that you might not remember soldering. These two peripherals came with the board.
 
-The first peripheral is a little chip on the Feather, next to the prototyping area. It's a two megabyte Flash chip; every Adafruit board with "Express" in the name comes with one. We're going to use it to store the data we collect on our hikes, and the SPIFlash library is going to be our interface to it. This guide isn't going to talk about it much more than that, but SPI is a major topic by the end (and one we'll start to explore at the end of the next guide).
+The first peripheral is a little chip on the Feather, next to the prototyping area. It's a two megabyte Flash chip; every Adafruit board with "Express" in the name comes with one. We're going to use it to store the data we collect on our hikes, and the SPIFlash library is going to be our interface to it. This guide isn't going to talk about it much more than that, but SPI will be a major topic by the end of this series.
 
 You might not even think of the second peripheral as a device in its own right, but it's one of the most powerful: I'm talking about the USB port. Since the SAMD21 at the heart of this gadget has native USB functionality, we can easily use the USB port to do all kinds of USB things, from emulating a keyboard to showing up as a thumb drive. That's what TinyUSB is going to do for us: turn the log into a hard drive so we can get our data out. 
 
@@ -294,7 +292,7 @@ Adafruit_SPIFlash flash(&flashTransport);
 FatFileSystem fatfs;
 ```
 
-From here, we're going to add all of our setup code in the setup() function, and our looping code in loop() function. If you haven't done Arduino stuff before: the code in setup() runs once when the device turns on or resets, and the code in loop() runs repeatedly. 
+From here, we're going to add all of our setup code in the setup() function, and our looping code in the loop() function. If you haven't done Arduino stuff before: the code in setup() runs once when the device turns on or resets, and the code in loop() runs repeatedly. 
 
 ### The Setup
 
@@ -341,7 +339,7 @@ Now let's turn our attention to the loop function. First, we're going to need to
 GPS.read();
 ```
 
-This reads whatever characters came in on the RX line. Remember: the GPS is just sending us sentences of data, one line at a time. Which means that if that input included a newline, we might have a new sentence: 
+This reads whatever characters came in on the RX line. Remember: the GPS is just sending us sentences of data, one character at a time. After processing whatever characters are in the queue, we need to check to see if we have a new sentence: 
 
 ```
 if (GPS.newNMEAreceived()) {
@@ -350,9 +348,9 @@ if (GPS.newNMEAreceived()) {
 }
 ```
 
-This GPS.parse method does A LOT. The sentence that came in could have included data about our location and heading, the time of day, the number of satellites in view, all kinds of good stuff. The parse method takes all of that data, and updates the instance variables in the GPS class so that we can just query `GPS.satellites` and get the latest value for how many satellites are in view. 
+This GPS.parse method does A LOT. The sentence that came in could have included data about our location and heading, the time of day, the number of satellites in view, all kinds of good stuff. The parse method takes all of that data, and updates the instance variables in the GPS class so that we can just query, say, `GPS.altitude` and get the latest value for our altitude.
 
-Next, we're going to log the data! We can't log all the time, though. To keep it simple, we're going to log a data point every minute. The GPS module gives us a super-accurate, satellite-synchronized real-time clock, so all we have to do is: 
+Next, we're going to log the data! We can't log all the time, though. To keep it simple, we're going to log a data point every minute. The GPS module gives us a super-accurate, satellite-synchronized real-time clock, so all we have to do is:
 
 1. Set a variable `shouldLog` to true.
 2. Log a data point when the seconds on the clock read :00
@@ -420,7 +418,7 @@ else
 }
 ```
 
-The dtostrf call is like the sprintf above, but for formatting double precision numbers like our GPS coordinates. After that, we log some more data that the GPS has for us: HDOP (horizontal dilution of position) tells us how accurate our location is. Speed, the GPS gives to us in knots, like for ships. We multiply it by 1.852001 to get this number in kilometers per hour. Angle is your heading in degrees; the GPS doesn't have a compass, but if you're moving, the GPS can tell you what direction you're going (true north is 0). And then altitude is meters above sea level.
+The dtostrf call is like the sprintf above, but for formatting double precision numbers like our GPS coordinates. After that, we log some more data that the GPS has for us: HDOP (horizontal dilution of position) tells us how accurate our location is. Speed, the GPS gives to us in knots, like for ships. We multiply it by 1.852001 to get this number in kilometers per hour. Angle is your heading in degrees; the GPS doesn't have a compass, but if you're moving, it can tell you what direction you're going (true north is 0). And then altitude is in meters above sea level.
 
 If we don't have a fix, we just output six commas, to keep the columns aligned. This will show up as empty cells in our spreadsheet.
 
