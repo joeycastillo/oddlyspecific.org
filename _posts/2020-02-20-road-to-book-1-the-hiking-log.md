@@ -210,11 +210,27 @@ Then flip the board over and, making sure that both the switch pin and the wire 
 
 ![Build photo](/assets/images/posts/2020-02-20-build-160.jpg)
 
-At this point, you should be able to mount the Wing atop the Feather (running the battery cable in between), and already get a sense for how the project is going to fit together! 
+At this point, you should be able to mount the Wing atop the Feather (running the battery cable in between), and already get a sense for how the project is going to fit together! Don’t plug the battery in yet, though.
 
 ![Build photo](/assets/images/posts/2020-02-20-build-170.jpg)
 
-Don’t plug the battery in just yet, though. First, let’s set up the DHT22 sensor. Secure the wires in that small channel at the bottom; if you’re looking at it with the USB port facing you, they should be in black / yellow / red order, like the flag of Belgium: 
+### A Brief Tangent: Ohm's Law
+
+I added this bit a few days after initially publishing this. I'd intended to cover Ohm's Law in lesson 2, but this is weirdly the perfect place to at least introduce it. Remember up top, when we mentioned that the enable line is pulled high to keep the regulator on? The Feather pulls this signal up (to the battery or USB) with a 100,000 **ohm** (more commonly, a 100 **Kilo-ohm** resistor). When we switch the power switch to the OFF position, it connects that power source to GND, via the resistor. This turns off the voltage regulator, but there's still some current flowing through the resistor! We can calculate that current using **Ohm's Law**.
+
+Ohm's Law is a very fundamental law of electronics. It relates two of the concepts we've talked about so far (voltage and current) and a third that we've only sort of touched on: **resistance**. Voltage (V), current (I) and resistance (R) are all related to each other by the following formula: 
+
+**V = I × R**
+
+You can rewrite this equation several different ways, depending on which terms you have, and which terms you need; for example, **I&nbsp;=&nbsp;V&nbsp;/&nbsp;R**, or **R&nbsp;=&nbsp;V&nbsp;/&nbsp;I**. Let's take the case of the off switch when connected to battery power: we know the voltage of the battery and the value of the resistor, so we can solve for I to find out how much current is flowing:
+
+**I (current) = 3.7V / 100000Ω = 0.000037 amperes = 0.037 milliamps (mA)**
+
+This is a vanishingly small amount of current; remember, our battery has 2,200 milliampere-hours (mAh) of capacity. Anyway, for the moment, this isn't a terribly important calculation for our circuit (except to reassure ourselves that it would take years for the off switch to drain the battery), but keep Ohm's Law in the back of your mind; it's going to come up again and again. 
+
+### Continuing the build
+
+Where we last left things, everything was sitting inside the log enclosure, and the battery was unplugged (for now, leave it unplugged). First, let’s set up the DHT22 sensor. Secure the wires in that small channel at the bottom; if you’re looking at it with the USB port facing you, they should be in black / yellow / red order, like the flag of Belgium: 
 
 ![Build photo](/assets/images/posts/2020-02-20-build-180.jpg)
 
@@ -273,7 +289,7 @@ You might not even think of the second peripheral as a device in its own right, 
 
 We're going to start with a blank sketch; just click File -> New. 
 
-First, let's bring in our libraries. At the top, add imports for the two libraries we need, (and one more for a function we're going to end up using): 
+First, let's bring in our libraries. At the top, add imports for the three libraries we need, (and one more for a function we're going to end up using): 
 
 ```
 #include <Adafruit_SPIFlash.h>
@@ -282,7 +298,7 @@ First, let's bring in our libraries. At the top, add imports for the two librari
 #include <avr/dtostrf.h>
 ```
 
-While you're there, you can also add a couple of globals for the GPS, Flash, filesystem and sensor: 
+While you're there, you can also add some globals for the GPS, Flash, filesystem and sensor: 
 
 ```
 Adafruit_GPS GPS(&Serial1);
@@ -422,7 +438,7 @@ The dtostrf call is like the sprintf above, but for formatting double precision 
 
 If we don't have a fix, we just output six commas, to keep the columns aligned. This will show up as empty cells in our spreadsheet.
 
-One last GPS thing that I find fun: the GPS module also reports the number of satellites it's using for the calculation. I find this data point so abundantly fun, so let's add it: 
+One last GPS thing: the GPS module also reports the number of satellites it's using for the calculation. I find this data point so abundantly fun, so let's add it: 
 
 ```
 datapoint += (int)GPS.satellites;
