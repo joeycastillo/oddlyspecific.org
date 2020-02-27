@@ -45,7 +45,7 @@ As it turns out, there are several standards for this kind of communication. One
 
 This is all by way of saying, our extremely accurate real-time clock is just such a device, and we're going to connect it to the SCL and SDA lines on the Feather.
 
-The clock and data lines are pretty much what they sound like: the master device drives the clock line — it's basically a continuous stream of high and low pulses — and either the master or the slave devices drive the Data line to communicate. Both sides of the bus use the open drain output style that we talked about last time — which is to say, they can only drive the lines low — so both SCL and SDA both need a pull-up resistor. We don't need to worry about that in this project, though, because the DS3231 breakout has those on board. 
+The clock and data lines are pretty much what they sound like: the clock line is basically a continuous stream of high and low pulses — the master device generates these — and the data line is for communication in both directions. Both sides of the bus use the open drain output style that we talked about last time — which is to say, they can only drive the lines low — so both SCL and SDA need a pull-up resistor. We don't need to worry about that in this project, though, because the DS3231 breakout has those on board. 
 
 In order to connect multiple devices to the I²C bus, each one needs to have its own **address**. Some I²C slave devices have an address permanently assigned at the factory; others have pins you can tie high or low to change the adddress. In the case of our DS3231, the address is fixed, so whenever we want to talk to it, we send its address (0x68) over the data line, and that tells the DS3231 to start listening. 
 
@@ -57,7 +57,7 @@ Up until now, we've been dealing with pretty complex modules that we've been abl
 
 That all changes with this project. To drive the three giant digits, we're going to use a trio of 74HC595 **shift registers**, and while I suppose you could find some kind of library to drive them, they're kind of basic, fundamental parts, and you're going to learn a lot by writing code to control them from scratch. 
 
-So here's the deal with shift registers: they're amazing. They're all over the place in electronics design, because they're just so useful. Say you wanted to get the state of 8 buttons. You could use 8 pins on your microcontroller — or you could use a shift register to turn those read those 8 button states, and translate them into pulses on a wire. This is an example of a **parallel in, serial out** shift register; there are eight lines in parallel coming in, and one line transmitting the data serially coming out.
+So here's the deal with shift registers: they're amazing. They're all over the place in electronics design, because they're just so useful. Say you wanted to get the state of 8 buttons. You could use 8 pins on your microcontroller — or you could use a shift register to read those 8 button states, and translate them into eight pulses on one wire. This is an example of a **parallel in, serial out** shift register; there are eight lines in parallel coming in, and one line transmitting the data serially coming out.
 
 Say you need to drive three 7-segment digits, but you don't have 21 pins on your feather? OH WAIT, it's precisely our predicament! What a fortunate turn of events. We'll use a **serial in, parallel out** shift register to turn one serial output signal into many more parellel outputs. 
 
@@ -69,13 +69,13 @@ Finally, when the latch line rises, the chip will take whatever values it has in
 
 There's one last piece of the puzzle that lets us drive three displays with one serial interface. You'll notice that with 8 bits of storage, and bits shifting to the left, you'll start to lose things as you shift in more than 8 bits. Luckily, the 74HC595 includes another pin, a **serial data output** pin. Whenever we shift in a bit, the register **shifts out** the bit that overflowed. If we connect that serial output to the input of a second shift register, we can clock 16 bits in, and control 16 outputs. Connect the serial output of that second register to the input of a third, and we can control 24 outputs! 
 
-Speaking of outputs: it's probably time to talk about the user interface for our clock: the big red numbers. 
+Speaking of outputs, it's probably time to talk about the user interface for our clock: the big red numbers. 
 
 ### The Big Red Numbers (and Ohm's Law)
 
 The way to think about these big chunky numbers is pretty simple: it's basically a bunch of LED's. Last time around, we blinked an LED when the hiking log logged a data point. It was pretty simple: we set the output line high, which caused the microcontroller to source current at 3.3 volts, and that current flowed through the LED to make it blink. And while sure, like we said, the point of digital IO isn't to have large amounts of current flowing, an LED doesn't need that much power to light up. 
 
-Remember last time, when we were talking about Ohm's Law? It's back! If you'll recall, we connected a 100 KΩ resistor between power and ground, and in so doing, got a very small amount of current flowing. Before we do this next thing, one important note. The same way we connected that 100K resistor between power andf ground? We could also have connected two 50K resistors in a row (also described as **in series**): 
+Remember last time, when we were talking about Ohm's Law? It's back! If you'll recall, we connected a 100 KΩ resistor between power and ground, and in so doing, got a very small amount of current flowing. Before we do this next thing, one important note. The same way we connected that 100K resistor between power and ground? We could also have connected two 50K resistors in a row (also described as **in series**): 
 
 ![Alt text](/assets/images/posts/2020-02-27-understand-resistors-in-series.png)
 
@@ -101,9 +101,9 @@ So let's say we want to light this LED with 1.5mA of current (typical for an ind
 
 To figure out the value of the resistor, we take the total voltage of the circuit (3.3 volts) and subtract the forward current of the LED (1.8V). This leaves 1.5 volts. Now plug it into that Ohm's Law equation from last time: 
 
-**R = 1.5V / 0.0015A =1000Ω**
+**R = 1.5V / 0.0015A = 1000Ω**
 
-1000 ohms, or 1KΩ, usually ends up being a safe bet for a resistor value for driving LED's. And indeed, our Feather M0 has a resistor of roughly this magnitude (2.2KΩ) connected in series with the pin 13 LED, which is why we were able to blink without worrying about any of this!
+1000 ohms, or 1KΩ. This usually ends up being a safe bet for a resistor value for driving LED's. And indeed, our Feather M0 has a resistor of roughly this magnitude (2.2KΩ) connected in series with the pin 13 LED, which is why we were able to blink without worrying about any of this!
 
 For these big segmented numbers from Tinkersphere, the web page describes the expected operating current: between 1 and 20 mA. It also describes a value that it claims is the forward voltage (1.8 V). Unfortunately this number seems to be completely off. My theory is that there are two LED's in series inside each segment, because the forward voltage seems to me to be much closer to 3.6 volts. Anyway, we're going to guess at that value, and try to drive these segments at something on the order of 7 mA.
 
@@ -137,26 +137,28 @@ To know which pins do which things, we'll [check the datasheet](https://assets.n
 
 Most of the pins on the three chips will be configured the same way; only the data line will be different. For all of these, we want to make the following connections: 
 
-* Q1 - Q7 (pins 1-7): these are outputs to each of the big red numbers.
-* GND (pin 8): connects to the ground rail.
-* MR (pin 10): Master Reset. We'll tie this to the 5v rail. We could control it from the Feather, pulling it low to reset the register, but we don't need to.
-* SHCP (pin 11): We'll connect this to the pin we're calling "Clock" on the Feather; it's the shift register's clock pin (SHCP).
-* STCP (pin 12): We'll connect this to the pin we're calling "Latch" on the Feather. We'll connect this to the pin we're calling "Latch" on the Feather; it's the storage register's clock pin (STCP).
-* OE (pin 13): Output Enable. We'll tie this to GND. We could control it from the Feather, pulling it high to turn off or dim the outputs, but it's simpler to keep them on all the time.
-* Q0 (pin 15): We'll leave this disconnected, it's the eighth output, but we only have 7 segments to drive. (You could connect it to the decimal point, but you'd need a different resistor value.)
-* VCC (pin 16): connected to 5v power.
+* Q1 - Q7: these are outputs to each of the big red numbers.
+* GND: connects to the ground rail.
+* MR: Master Reset. We'll tie this to the 5v rail. We could control it from the Feather, pulling it low to reset the register, but we don't need to.
+* SHCP: We'll connect this to the pin we're calling "Clock" on the Feather; it's the shift register's clock pin (SHCP).
+* STCP: We'll connect this to the pin we're calling "Latch" on the Feather. We'll connect this to the pin we're calling "Latch" on the Feather; it's the storage register's clock pin (STCP).
+* OE: Output Enable. We'll tie this to GND. We could control it from the Feather, pulling it high to turn off or dim the outputs, but it's simpler to keep them on all the time.
+* Q0: We'll leave this disconnected, it's the eighth output, but we only have 7 segments to drive. (You could connect it to the decimal point, but you'd need a different resistor value.)
+* VCC: connected to 5v power.
 
-Assuming the clock and latch lines are on pins 10 and 11 (I'm using yellow and green, respectively), you could wire it like this.
+Assuming the clock and latch lines are on the Feather's pins 10 and 11 (I'm using yellow and green, respectively), you could wire it like this:
 
 ![Alt text](/assets/images/posts/2020-02-27-build-080.png)
 
-The two differences are going to have to do with the DS and Q7S pins (pins 14 and 9). On the rightmost shift register, DS is going to be connected to the line on the Feather we're calling "Data"; it's the serial data input. Then its Q7S, the output of the bit that overflowed, will be connected to the middle shift register's DS pin, serving as the input to that shift register. Same thing there: the middle shift register's Q7S will be attached to the leftmost's DS. And the leftmost register's Q7S will be left disconnected. Assuming the data line (blue) on pin 12, it should in theory look something like this: 
+The two differences are going to have to do with the DS and Q7S pins (pins 14 and 9). On the rightmost shift register, DS is going to be connected to the line on the Feather we're calling "Data"; it's the serial data input. Then that first chip's Q7S, the output of the bit that overflowed, will be connected to the middle shift register's DS pin, serving as the input to that shift register. Same thing there: the middle shift register's Q7S will be attached to the leftmost's DS. And the leftmost register's Q7S will be left disconnected. Assuming the data line (blue) is on the Feather's pin 12, it should in theory look something like this: 
 
 ![Alt text](/assets/images/posts/2020-02-27-build-090.png)
 
-Of course, in practice, it's totally fine if it looks something like this; just make sure all the columns are connected correctly.
+Of course, in practice, it's totally fine if it looks something like this:
 
 ![Alt text](/assets/images/posts/2020-02-27-build-100.jpg)
+
+Just make sure all the columns are connected correctly.
 
 Before we go on, I want to point something out that wasn't clear to me when I first started making circuits. All wires that are connected to each other are at the exact same point in the circuit; they are a part of a single **node**. Like, there's this temptation to imagine current flowing from one place to another like a series of pipes, but in practice it's not useful to think that way. For example, this is how I wired the clock line the first time I did this project: 
 
@@ -166,7 +168,7 @@ It satisfied me aesthetically that the clock line went to the first chip first, 
 
 ![Alt text](/assets/images/posts/2020-02-27-build-120.png)
 
-Now, you could lay out the breadboard this way if you wanted to; unless you're dealing with really high speed signals like USB, it doesn't really matter which wires go where, as long as they connect the right pins to the right nodes. The point I want to drive home is that no matter how you wire it, all three clock pins on all three chips — and all the pins in all three of those columns — are connected, directly, to pin 10, just as if we'd soldered them all together at one point. 
+Now, you could lay out the breadboard this way if you wanted to; unless you're dealing with really high speed signals, it doesn't really matter which wires go where, as long as they connect the right pins to the right nodes. The point I want to drive home is that no matter how you wire it, all three clock pins on all three chips — and all the pins in all three of those columns — are connected, directly, to pin 10, just as if we'd soldered them all together at one point. 
 
 But I digress. 
 
@@ -225,12 +227,11 @@ Create a new, blank sketch, and install the following library:
 
 * RTCLib by Adafruit
 
-Import it and create a global for the RTC and the deadline we'll be counting down to: 
+Import it and create a global for the RTC: 
 
 ```
 #include <RTClib.h>
 RTC_DS3231 rtc;
-long deadline = 0;
 ```
 
 We're going to use this object for setting and checking the date and time. This is going to make things simpler for us, but don't worry, we're going to peek under the hood in a moment. 
@@ -245,7 +246,7 @@ if (rtc.lostPower()) {
 }
 ```
 
-Believe it or not, that's it! The `rtc.adjust` line sets the time to the exact time that the sketch was compiled, and we can call `rtc.now()` to get the current date and time. The RTC will continue ticking as log as the coin cell has power, even if USB power is disconnected.
+Believe it or not, that's it! The `rtc.adjust` line sets the time to the exact time that the sketch was compiled; once we've done this, we can call `rtc.now()` to get the current date and time. The RTC will continue ticking as log as the coin cell has power, even if USB power is disconnected.
 
 One catch, though: that's the only thing that's saved when USB power is disconnected. Eventually, we want to be able to set the countdown date on the device, which means we're also going to have to store that somewhere. And as it turns out, the DS3231 has a handful of other registers that can serve as space to back up our date. 
 
@@ -261,7 +262,7 @@ The DS3231, as it turns out, supports an alarm function; if enabled, it can outp
 
 So here's our plan for the register map: 
 
-* Register 0x08: normally used to store Alarm 1 minutes, we'll store the year for our deadline here (00-60 signifying 2000-2060)
+* Register 0x08: normally used to store Alarm 1 minutes, we'll store the year for our deadline here (00-59 signifying 2000-2059)
 * Register 0x09: normally used to store Alarm 1 hours, we'll use it to store the month for our deadline (1-12)
 * Register 0x0A: normally used to store Alarm 1 day, we'll use it to store the day of the month for the deadline (1-31)
 
@@ -344,18 +345,13 @@ long JulianDate(int year, int month, int day) {
 }
 ```
 
- Now, we can set our deadline at the very end of the setup function...
- 
- ```
-deadline = JulianDate(2000 + unpackValue(read_I2C_register(DS3231_ADDRESS, 0x08)), 
-unpackValue(read_I2C_register(DS3231_ADDRESS, 0x09)), 
-unpackValue(read_I2C_register(DS3231_ADDRESS, 0x0A)));
-```
-
-...and start to populate the loop() function: 
+Now, we can start to populate the loop() function: 
 
 ```
 DateTime now = rtc.now();
+long deadline = JulianDate(2000 + unpackValue(read_i2c_register(DS3231_ADDRESS, 0x08)), 
+                                  unpackValue(read_i2c_register(DS3231_ADDRESS, 0x09)), 
+                                  unpackValue(read_i2c_register(DS3231_ADDRESS, 0x0A)));
 long julianNow = JulianDate(now.year(), now.month(), now.day());
 long remaining = deadline - julianNow - 1;
 ```
@@ -464,9 +460,10 @@ One bit of extra thing to think about, though: toward the end, when we were flas
 
 In fact, those SCK, MOSI and MISO pins on your Feather? They're the clock and data lines for an SPI bus; MOSI is master-out, slave-in — the equivalent of what we were doing with our data line — and MISO (master-in, slave-out) is a second data line for peripherals to talk back. They both use these signals very similarly to the way we did just now, clocking in bits of data when the clock line changes. 
 
-To be clear: there are different modes of SPI, bit order to worry about, and the Feather's SAMD21 has hardware acceleration and all kinds of optimizations for high-speed communication over the SPI bus. Still, fundamentally, by learning to send individual bits and bytes to these shift registers, you learned something about how the bus that drives a Flash chip, an SD card and (eventually) the Open Book's e-ink screen works. Which I think is pretty rad. 
+To be clear: there are different modes of SPI, bit order to worry about, and the Feather's SAMD21 has hardware acceleration and all kinds of optimizations for high-speed communication over the SPI bus. Still, fundamentally, by learning to send individual bits and bytes to these shift registers, you learned something about how the bus that drives a Flash chip, an SD card and (eventually) the Open Book's e-ink screen. Which I think is pretty rad. 
 
 ## THAT FINAL PROMISED NOTE: The Level Shifter
 
-**We did something a little bit unusual here with logic levels: powering the shift registers with 5 volts, but using 3.3 volt logic for their inputs.** The 74HC595 shift registers I got from Adafruit were from NXP, and had no trouble at all with this arrangement. But I also tried some TI-branded 595's from Tinkersphere that would not respond to the 3V logic. If you find yourself at this point in the guide and , [this inexpensive level shifter will solve the problem](https://www.adafruit.com/product/757). I'll add a note about wiring it shortly; fact is, I didn't run into this issue until I'd already written the whole lesson, and it's easier to explain all this if we assume our shift registers' inputs work with our microcontroller's outputs. Also, this trick only works because we're only outputting from a 3.3V chip to the 5V shift registers; *NEVER connect the output from a 5V peripheral to a 3.3v input without proper level shifting*.
+**We did something a little bit unusual here with logic levels: powering the shift registers with 5 volts, but using 3.3 volt logic for their inputs.** The 74HC595 shift registers I got from Adafruit were from NXP, and had no trouble at all with this arrangement. But I also tried some TI-branded 595's from Tinkersphere that would not respond to the 3V logic. If you find that your shift registers aren't driving the displays the way you would expext, [this inexpensive level shifter should solve the problem](https://www.adafruit.com/product/757). I'll add details about wiring it shortly; fact is, I didn't run into this issue until I'd already planned out the whole lesson, and it's easier to explain all this if we assume our shift registers' inputs work with our microcontroller's outputs. 
 
+Also, note that this trick only worked because we were outputting from a 3.3V chip to the 5V shift registers; *NEVER connect the output from a 5V device to a 3.3v input without proper level shifting*.
