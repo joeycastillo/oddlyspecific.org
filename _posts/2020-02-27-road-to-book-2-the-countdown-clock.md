@@ -5,7 +5,7 @@ image: /assets/images/posts/2020-02-27-card.jpg
 description: In which we learn about prototyping, current limiting, shift registers and I²C (and light up some big red numbers).
 ---
 
-# Oddly Specific Object #2: The Countdown Clock, Part 1
+# Road to the Book #2: The Countdown Clock, Part 1
 
 Last week, we talked a bit about digital input and output. We kind of glossed over the mechanics of it, though. The yellow data wire somehow let us get temperature data from our sensor, but we didn't talk about the signals actually going over the line. We let a third-party library handle it. 
 
