@@ -431,15 +431,18 @@ It should look something like this:
 
 Now, open the countdown clock sketch from last week. Change your pin definitions to match the new pinout. This generic board uses the SAMD11 port pin numbers, not the physical pin numbers, so it should look like this: 
 
-```const int PIN_DISPLAY_CLOCK = 23;
+```
+const int PIN_DISPLAY_CLOCK = 23;
 const int PIN_DISPLAY_LATCH = 16;
 const int PIN_DISPLAY_DATA = 22;
 ```
 
 From the Tools -> Board menu, select the "Generic D11D14AS" board. Plug your board in, and click Verify! And you'll get an error.
 
-```ld: Countdown.ino.elf section `.text' will not fit in region `FLASH'
-ld: region `FLASH' overflowed by 1896 bytes```
+```
+ld: Countdown.ino.elf section `.text' will not fit in region `FLASH'
+ld: region `FLASH' overflowed by 1896 bytes
+```
 
 So here's the deal with our DIY microcontroller board: it's smaller than the boards you're probably used to. The Feather M0 you were using? Had 256 kilobytes of Flash memory. This board only has 16 kilobytes. That's a big difference! Not only that, but the bootloader we burned on to the board took up 4 kilobytes of that Flash, so we only have 12 kilobytes to work with. 
 
@@ -455,30 +458,37 @@ So! Let's start slimming down. First things first: if you added any `Serial.prin
 
 Next, we can disable features we're not using. Go to Tools -> Serial Config, and select "NO_UART_ONE_WIRE_ONE_SPI". Remember, the UART was what we used to talk to the GPS in the Hiking Log last month; in larger Feathers like the M0 or M4, this peripheral is always enabled, but it does require some extra code. Disabling the UART means that we can omit that code. Click "Verify" again and see how we're doing; on my end: 
 
-```ld: Countdown.ino.elf section `.text' will not fit in region `FLASH'
-ld: region `FLASH' overflowed by 480 bytes```
+```
+ld: Countdown.ino.elf section `.text' will not fit in region `FLASH'
+ld: region `FLASH' overflowed by 480 bytes
+```
 
 Oof. So close. At this point, you may be looking at your code and wondering, what else can I cut out? I was there too. But then I looked at the Julian Date function: 
 
-```long JulianDate(int year, int month, int day) {
+```
+long JulianDate(int year, int month, int day) {
   long centuries = year / 100;
   long leaps = centuries / 4;
   long leapDays = 2 - centuries + leaps;  // note: is negative!
   long yearDays = 365.25 * (year + 4716); // days until 1 jan this year
   long monthDays = 30.6001* (month + 1);  // days until 1st month
   return leapDays + day + monthDays + yearDays -1524.5;
-}```
+}
+```
 
 One thing I thought was that that's a lot of math, and maybe there was a way to simplify it. In the end, I figured out that by rewriting this only integer math, I could shrink the code size dramatically. [Wikipedia's entry on Julian days](https://en.wikipedia.org/wiki/Julian_day#Converting_Julian_calendar_date_to_Julian_Day_Number) has a formula that fits the bill: 
 
-```long JulianDate(int year, int month, int day) {
+```
+long JulianDate(int year, int month, int day) {
   return 367 * year - (7 * (year + 5001 + (month - 9) / 7)) / 4 + (275 * month) / 9 + day + 1729777;
 }
 ```
 
 Click "Verify" now and...
 
-```Sketch uses 11040 bytes (89%) of program storage space. Maximum is 12288 bytes.```
+```
+Sketch uses 11040 bytes (89%) of program storage space. Maximum is 12288 bytes.
+```
 
 The code fits! At this point, you can run the sketch, and you should see the date appear on your clock. 
 
